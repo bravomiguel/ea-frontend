@@ -4,13 +4,16 @@ import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusIcon } from 'lucide-react';
 import { useThreadStore } from '@/store/thread-store';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export function ChatSidebar() {
   const { threads, isLoading, error, fetchThreads, selectedThread, setSelectedThread } = useThreadStore();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   
   useEffect(() => {
     fetchThreads();
-  }, [fetchThreads]);
+  }, []);
 
   return (
     <div className="w-64 flex flex-col h-full bg-white border-r">
@@ -41,24 +44,20 @@ export function ChatSidebar() {
                   }`}
                   onClick={() => {
                     setSelectedThread(thread.thread_id);
+                    
+                    // Update URL with the selected thread
+                    const params = new URLSearchParams(searchParams);
+                    params.set('threadId', thread.thread_id);
+                    router.push(`?${params.toString()}`);
                   }}
                 >
-                  {thread.thread_id.substring(0, 22)}...
+                  {thread.thread_id.substring(0, 23)}...
                 </Button>
               ))}
             </div>
           )}
         </div>
       </div>
-      
-      {/* <div className="p-4 border-t border-gray-200 mt-auto">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs">
-            G
-          </div>
-          <span className="text-sm text-gray-700">Guest</span>
-        </div>
-      </div> */}
     </div>
   );
 }
