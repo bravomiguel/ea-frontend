@@ -1,17 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusIcon } from 'lucide-react';
-
-// Sample chat history items
-const chatHistoryItems = [
-  { id: 1, title: 'Essay on Silicon Valley' },
-  { id: 2, title: 'Advantages of Next.js' },
-];
+import { useThreadStore } from '@/store/thread-store';
 
 export function ChatSidebar() {
-  const [selectedChat, setSelectedChat] = useState<number | null>(null);
+  const { threads, isLoading, error, fetchThreads, selectedThread, setSelectedThread } = useThreadStore();
+  
+  useEffect(() => {
+    fetchThreads();
+  }, [fetchThreads]);
 
   return (
     <div className="w-64 flex flex-col h-full bg-white border-r">
@@ -24,21 +23,31 @@ export function ChatSidebar() {
       
       <div className="flex flex-col flex-1 overflow-auto">
         <div className="p-2">
-          <h3 className="text-xs text-gray-500 px-2 py-1">Today</h3>
-          <div className="space-y-1">
-            {chatHistoryItems.map((item) => (
-              <Button
-                key={item.id}
-                variant="ghost"
-                className={`w-full justify-start text-sm font-normal text-left px-2 ${
-                  selectedChat === item.id ? 'bg-gray-100' : ''
-                }`}
-                onClick={() => setSelectedChat(item.id)}
-              >
-                {item.title}
-              </Button>
-            ))}
-          </div>
+          <h3 className="text-xs text-gray-500 px-2 py-1">Chats</h3>
+          {isLoading ? (
+            <div className="p-2 text-sm text-gray-500">Loading threads...</div>
+          ) : error ? (
+            <div className="p-2 text-sm text-red-500">{error}</div>
+          ) : threads.length === 0 ? (
+            <div className="p-2 text-sm text-gray-500">No threads found</div>
+          ) : (
+            <div className="space-y-1">
+              {threads.map((thread) => (
+                <Button
+                  key={thread.thread_id}
+                  variant="ghost"
+                  className={`w-full justify-start text-sm font-normal text-left px-2 ${
+                    selectedThread === thread.thread_id ? 'bg-gray-100' : ''
+                  }`}
+                  onClick={() => {
+                    setSelectedThread(thread.thread_id);
+                  }}
+                >
+                  {thread.thread_id.substring(0, 22)}...
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       
