@@ -2,6 +2,49 @@
 
 import { Thread } from '@/store/thread-store';
 
+export async function createThread(): Promise<Thread> {
+  try {
+    const response = await fetch('http://127.0.0.1:2024/threads', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        // thread_id: '',
+        metadata: {},
+        if_exists: 'raise',
+        ttl: {
+          strategy: 'delete',
+          ttl: 1
+        },
+        // supersteps: [{
+        //   updates: [{
+        //     values: [{}],
+        //     command: {
+        //       update: null,
+        //       resume: null,
+        //       goto: {
+        //         node: '',
+        //         input: null
+        //       }
+        //     },
+        //     as_node: ''
+        //   }]
+        // }]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error creating thread: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Failed to create thread:', error);
+    throw error;
+  }
+}
+
 export async function searchThreads({
   metadata = {},
   values = {},

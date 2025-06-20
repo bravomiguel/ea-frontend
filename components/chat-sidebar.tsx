@@ -7,19 +7,50 @@ import { useThreadStore } from '@/store/thread-store';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export function ChatSidebar() {
-  const { threads, isLoading, error, fetchThreads, selectedThread, setSelectedThread } = useThreadStore();
+  const { threads, isLoading, error, fetchThreads, selectedThread, setSelectedThread, handleCreateThread } = useThreadStore();
   const router = useRouter();
   const searchParams = useSearchParams();
   
   useEffect(() => {
+    // Fetch threads when component mounts
     fetchThreads();
   }, []);
+  
+  // Handle thread selection from URL when threads are loaded
+  useEffect(() => {
+    if (!isLoading && threads.length > 0) {
+      const threadId = searchParams.get('threadId');
+      if (threadId) {
+        // Check if the thread exists in our loaded threads
+        const threadExists = threads.some(thread => thread.thread_id === threadId);
+        if (threadExists) {
+          setSelectedThread(threadId);
+        }
+      }
+    }
+  }, [threads, isLoading, searchParams, setSelectedThread]);
 
   return (
     <div className="w-64 flex flex-col h-full bg-white border-r">
       <div className="p-4 flex items-center justify-between">
         <h2 className="font-semibold">Email Assistant</h2>
-        <Button variant="ghost" size="icon">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={async () => {
+            try {
+              const newThread = await handleCreateThread();
+              if (newThread) {
+                // Update URL with the new thread
+                const params = new URLSearchParams(searchParams);
+                params.set('threadId', newThread.thread_id);
+                router.push(`?${params.toString()}`);
+              }
+            } catch (error) {
+              console.error('Error creating new thread:', error);
+            }
+          }}
+        >
           <PlusIcon className="h-5 w-5" />
         </Button>
       </div>

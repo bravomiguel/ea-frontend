@@ -1,29 +1,37 @@
 'use client';
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ChatMessage, ChatMessageProps } from "@/components/chat-message"
 import { ChatInput } from "@/components/chat-input"
 
-// Dummy initial messages for demonstration
-const initialMessages: ChatMessageProps[] = [
-  {
-    role: "assistant",
-    content: "Hello there!\nHow can I help you today?",
-  },
-]
+// Initial message template
+const createInitialMessage = (threadId?: string): ChatMessageProps => ({
+  role: "assistant",
+  content: `Hello there!\nHow can I help you today?${threadId ? ` (Thread ID: ${threadId})` : ''}`,
+})
 
 // Sample suggested responses
-const suggestedResponses = [
-  "What are the advantages of using Next.js?",
-  "Write code to demonstrate dijkstra's algorithm",
-  "Help me write an essay about silicon valley",
-  "What is the weather in San Francisco?"
-]
+// const suggestedResponses = [
+//   "What are the advantages of using Next.js?",
+//   "Write code to demonstrate dijkstra's algorithm",
+//   "Help me write an essay about silicon valley",
+//   "What is the weather in San Francisco?"
+// ]
 
 export function ChatContainer() {
-  const [messages, setMessages] = useState<ChatMessageProps[]>(initialMessages)
+  const searchParams = useSearchParams()
+  const [messages, setMessages] = useState<ChatMessageProps[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  
+  useEffect(() => {
+    // Get threadId from URL parameters
+    const threadId = searchParams.get('threadId')
+    
+    // Set initial message with threadId if available
+    setMessages([createInitialMessage(threadId || undefined)])
+  }, [searchParams])
 
   // Dummy function to simulate AI response
   const simulateResponse = async (userMessage: string) => {
@@ -78,7 +86,7 @@ export function ChatContainer() {
       </ScrollArea>
       
       {/* Show suggested responses if only initial message is present */}
-      {messages.length === 1 && (
+      {/* {messages.length === 1 && (
         <div className="px-4 py-3 w-full">
           <div className="max-w-3xl mx-auto w-full grid grid-cols-2 gap-2">
             {suggestedResponses.map((response, index) => (
@@ -92,7 +100,7 @@ export function ChatContainer() {
             ))}
           </div>
         </div>
-      )}
+      )} */}
       <ChatInput onSend={handleSendMessage} disabled={isLoading} />
     </div>
   )

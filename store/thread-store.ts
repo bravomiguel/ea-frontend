@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { searchThreads } from '@/app/actions';
+import { searchThreads, createThread } from '@/app/actions';
 
 export interface Thread {
   thread_id: string;
@@ -17,6 +17,7 @@ interface ThreadState {
   selectedThread: string | null;
   fetchThreads: () => Promise<void>;
   setSelectedThread: (threadId: string | null) => void;
+  handleCreateThread: () => Promise<Thread | undefined>;
 }
 
 export const useThreadStore = create<ThreadState>((set) => ({
@@ -28,7 +29,9 @@ export const useThreadStore = create<ThreadState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const threads = await searchThreads({
-        limit: 10,
+        limit: 10, // Increased limit to ensure we get all threads
+        sort_by: 'updated_at', // Sort by most recently updated
+        sort_order: 'desc', // Show newest first
       });
 
       set({ threads, isLoading: false });
@@ -42,5 +45,34 @@ export const useThreadStore = create<ThreadState>((set) => ({
   },
   setSelectedThread: (threadId: string | null) => {
     set({ selectedThread: threadId });
+  },
+  handleCreateThread: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const newThread = await createThread();
+      
+      // Fetch all threads again to ensure we have the latest data
+      // This ensures thread persistence even after page reload
+      const threads = await searchThreads({
+        limit: 10,
+        sort_by: 'updated_at',
+        sort_order: 'desc',
+      });
+      
+      // Update the store with all threads and set the new one as selected
+      set({
+        threads,
+        selectedThread: newThread.thread_id,
+        isLoading: false
+      });
+      
+      return newThread;
+    } catch (error) {
+      console.error('Failed to create thread:', error);
+      set({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        isLoading: false,
+      });
+    }
   },
 }));
