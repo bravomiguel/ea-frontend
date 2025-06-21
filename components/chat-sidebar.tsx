@@ -7,9 +7,9 @@ import { cn } from '@/lib/utils';
 import { useQueryState } from 'nuqs';
 
 export function ChatSidebar() {
-  const { threads, activeThread, handleActiveThreadId, handleCreateThread } =
+  const { threads, handleCreateThread } =
     useThreads();
-  const [_, setThreadIdUrlParam] = useQueryState('threadId');
+  const [threadIdUrlParam, setThreadIdUrlParam] = useQueryState('threadId');
 
   return (
     <div className="w-64 flex flex-col h-full bg-white border-r">
@@ -35,11 +35,10 @@ export function ChatSidebar() {
                     'w-full justify-start text-sm font-normal text-left px-2',
                     {
                       'bg-gray-100':
-                        activeThread?.thread_id === thread.thread_id,
+                        threadIdUrlParam === thread.thread_id,
                     },
                   )}
                   onClick={() => {
-                    handleActiveThreadId(thread.thread_id);
                     setThreadIdUrlParam(thread.thread_id);
                   }}
                 >

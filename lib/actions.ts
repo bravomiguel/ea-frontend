@@ -1,13 +1,12 @@
 'use server';
 
-import { createClient } from '@/providers/client';
-import { Thread } from '@langchain/langgraph-sdk';
+import { Client, Thread } from '@langchain/langgraph-sdk';
 
 const apiUrl =
   process.env.VERCEL_ENV === 'development'
     ? 'http://127.0.0.1:2024'
     : 'http://127.0.0.1:2024';
-const client = createClient(apiUrl);
+const client = new Client({ apiUrl });
 
 export async function getThreadsAction(): Promise<Thread[]> {
   try {
@@ -28,6 +27,8 @@ export async function getThreadsAction(): Promise<Thread[]> {
         assistant_id: agent.assistant_id,
       },
       limit: 10,
+      sortBy: 'updated_at',
+      sortOrder: 'desc',
     });
 
     return threads;
@@ -42,6 +43,8 @@ export async function createThreadAction() {
     if (!apiUrl) return null;
 
     const thread = await client.threads.create();
+
+    // Return the thread data instead of redirecting
     return thread;
   } catch (error) {
     console.error('Failed to create thread:', error);
