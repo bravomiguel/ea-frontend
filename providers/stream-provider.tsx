@@ -1,3 +1,5 @@
+'use client';
+
 import React, { createContext, useContext } from 'react';
 import { useStream } from '@langchain/langgraph-sdk/react';
 import { type Message } from '@langchain/langgraph-sdk';
@@ -33,8 +35,8 @@ export function StreamProvider({ children }: StreamProviderProps) {
   const { activeThreadId, setActiveThreadId, refetchThreads } = useThreads();
 
   const streamValue = useTypedStream({
-    apiUrl: process.env.LANGGRAPH_API_URL,
-    assistantId: process.env.LANGGRAPH_GRAPH_ID ?? 'agent',
+    apiUrl: process.env.NEXT_PUBLIC_LANGGRAPH_API_URL,
+    assistantId: process.env.NEXT_PUBLIC_LANGGRAPH_GRAPH_ID ?? 'agent',
     threadId: activeThreadId ?? null,
     onCustomEvent: (event, options) => {
       options.mutate((prev) => {
