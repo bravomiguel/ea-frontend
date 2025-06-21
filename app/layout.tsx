@@ -2,9 +2,11 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
+
 import { Toaster } from '@/components/ui/sonner';
-import { ThreadProvider } from '@/providers/thread-provider';
 import { getThreadsAction } from '@/lib/actions';
+import { ThreadProvider } from '@/providers/thread-provider';
+import { QueryProvider } from '@/providers/query-provider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -36,7 +38,9 @@ export default async function RootLayout({
       >
         <NuqsAdapter>
           <Toaster />
-          <ThreadProvider threads={threads}>{children}</ThreadProvider>
+          <QueryProvider>
+            <ThreadProvider threads={threads}>{children}</ThreadProvider>
+          </QueryProvider>
         </NuqsAdapter>
       </body>
     </html>

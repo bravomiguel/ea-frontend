@@ -4,18 +4,26 @@ import { Button } from '@/components/ui/button';
 import { PlusIcon } from 'lucide-react';
 import { useThreads } from '@/providers/thread-provider';
 import { cn } from '@/lib/utils';
-import { useQueryState } from 'nuqs';
 
 export function ChatSidebar() {
-  const { threads, handleCreateThread } =
-    useThreads();
-  const [threadIdUrlParam, setThreadIdUrlParam] = useQueryState('threadId');
+  const {
+    threads,
+    createThread,
+    isCreatingThread,
+    threadIdUrlParam,
+    setThreadIdUrlParam,
+  } = useThreads();
 
   return (
     <div className="w-64 flex flex-col h-full bg-white border-r">
       <div className="p-4 flex items-center justify-between">
         <h2 className="font-semibold">Email Assistant</h2>
-        <Button variant="ghost" size="icon" onClick={handleCreateThread}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={createThread}
+          disabled={isCreatingThread}
+        >
           <PlusIcon className="h-5 w-5" />
         </Button>
       </div>
@@ -34,8 +42,7 @@ export function ChatSidebar() {
                   className={cn(
                     'w-full justify-start text-sm font-normal text-left px-2',
                     {
-                      'bg-gray-100':
-                        threadIdUrlParam === thread.thread_id,
+                      'bg-gray-100': threadIdUrlParam === thread.thread_id,
                     },
                   )}
                   onClick={() => {

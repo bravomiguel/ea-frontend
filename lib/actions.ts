@@ -13,19 +13,17 @@ export async function getThreadsAction(): Promise<Thread[]> {
     if (!apiUrl) return [];
 
     // List all assistants
-    const assistants = await client.assistants.search({
-      metadata: null,
-      offset: 0,
-      limit: 10,
-    });
+    // const assistants = await client.assistants.search({
+    //   metadata: null,
+    //   offset: 0,
+    //   limit: 10,
+    // });
 
     // We auto-create an assistant for each graph you register in config.
-    const agent = assistants[0];
+    // const agent = assistants[0];
 
     const threads = await client.threads.search({
-      metadata: {
-        assistant_id: agent.assistant_id,
-      },
+      metadata: {},
       limit: 10,
       sortBy: 'updated_at',
       sortOrder: 'desc',
@@ -40,11 +38,10 @@ export async function getThreadsAction(): Promise<Thread[]> {
 
 export async function createThreadAction() {
   try {
-    if (!apiUrl) return null;
+    if (!apiUrl) return;
 
     const thread = await client.threads.create();
 
-    // Return the thread data instead of redirecting
     return thread;
   } catch (error) {
     console.error('Failed to create thread:', error);

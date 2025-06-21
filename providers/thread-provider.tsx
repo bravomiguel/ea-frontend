@@ -1,8 +1,11 @@
 'use client';
 
 import { Thread } from '@langchain/langgraph-sdk';
-import { createContext, useContext } from 'react';
-import { createThreadAction } from '@/lib/actions';
+import { createContext, useContext, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { createThreadAction, getThreadsAction } from '@/lib/actions';
+import { useQueryState } from 'nuqs';
 
 type ThreadProviderProps = {
   threads: Thread[];
@@ -11,21 +14,60 @@ type ThreadProviderProps = {
 
 type Threads = {
   threads: Thread[];
-  handleCreateThread: () => void;
+  isThreadsLoading: boolean;
+  createThread: () => void;
+  isCreatingThread: boolean;
+  threadIdUrlParam: string | null;
+  setThreadIdUrlParam: (threadId: string | null) => void;
 };
 
 const ThreadContext = createContext<Threads | null>(null);
 
-export function ThreadProvider({ threads, children }: ThreadProviderProps) {
-  const handleCreateThread = async () => {
-    await createThreadAction();
-  };
+export function ThreadProvider({
+  threads: initialData,
+  children,
+}: ThreadProviderProps) {
+  const [threadIdUrlParam, setThreadIdUrlParam] = useQueryState('threadId');
+
+  const queryClient = useQueryClient();
+
+  const { data: threads, isLoading: isThreadsLoading } = useQuery({
+    queryKey: [`threads`],
+    queryFn: async () => {
+      const threads = await getThreadsAction();
+      return threads;
+    },
+    initialData: initialData,
+    refetchOnMount: false,
+  });
+
+  const {
+    data: newThread,
+    mutate: createThread,
+    isPending: isCreatingThread,
+  } = useMutation({
+    mutationFn: createThreadAction,
+    onSuccess: () => {
+      // revalidate data or show success toast
+      queryClient.invalidateQueries({ queryKey: [`threads`] });
+    },
+  });
+
+  useEffect(() => {
+    if (newThread) {
+      setThreadIdUrlParam(newThread.thread_id);
+    }
+  }, [newThread, setThreadIdUrlParam]);
 
   return (
     <ThreadContext.Provider
       value={{
         threads,
-        handleCreateThread,
+        isThreadsLoading,
+        createThread,
+        isCreatingThread,
+        threadIdUrlParam,
+        setThreadIdUrlParam,
       }}
     >
       {children}
