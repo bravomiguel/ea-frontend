@@ -1,13 +1,45 @@
 'use server';
 
-import { Thread } from '@/store/thread-store';
+import { createClient } from '@/providers/client';
+import { Thread } from '@langchain/langgraph-sdk';
+
+export async function getThreadsAction(): Promise<Thread[]> {
+  try {
+    const apiUrl =
+      process.env.VERCEL_ENV === 'development' ? 'http://127.0.0.1:2024' : null;
+    if (!apiUrl) return [];
+    const client = createClient(apiUrl);
+
+    // List all assistants
+    const assistants = await client.assistants.search({
+      metadata: null,
+      offset: 0,
+      limit: 10,
+    });
+
+    // We auto-create an assistant for each graph you register in config.
+    const agent = assistants[0];
+
+    const threads = await client.threads.search({
+      metadata: {
+        assistant_id: agent.assistant_id,
+      },
+      limit: 10,
+    });
+
+    return threads;
+  } catch (error) {
+    console.error('Failed to fetch threads:', error);
+    throw error;
+  }
+}
 
 export async function createThread(): Promise<Thread> {
   try {
     const response = await fetch('http://127.0.0.1:2024/threads', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         // thread_id: '',
@@ -15,7 +47,7 @@ export async function createThread(): Promise<Thread> {
         if_exists: 'raise',
         ttl: {
           strategy: 'delete',
-          ttl: 1
+          ttl: 1,
         },
         // supersteps: [{
         //   updates: [{
@@ -31,7 +63,7 @@ export async function createThread(): Promise<Thread> {
         //     as_node: ''
         //   }]
         // }]
-      })
+      }),
     });
 
     if (!response.ok) {
@@ -52,7 +84,7 @@ export async function searchThreads({
   limit = 10,
   offset = 0,
   sort_by = 'thread_id',
-  sort_order = 'asc'
+  sort_order = 'asc',
 }: {
   metadata?: Record<string, unknown>;
   values?: Record<string, unknown>;
@@ -66,7 +98,7 @@ export async function searchThreads({
     const response = await fetch('http://127.0.0.1:2024/threads/search', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         metadata,
@@ -75,8 +107,8 @@ export async function searchThreads({
         limit,
         offset,
         sort_by,
-        sort_order
-      })
+        sort_order,
+      }),
     });
 
     if (!response.ok) {
