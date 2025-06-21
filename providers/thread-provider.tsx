@@ -1,18 +1,8 @@
 'use client';
 
-import { validate } from 'uuid';
 import { Thread } from '@langchain/langgraph-sdk';
-import { useQueryState } from 'nuqs';
-import {
-  createContext,
-  useContext,
-  useCallback,
-  useState,
-  Dispatch,
-  SetStateAction,
-} from 'react';
-import { createClient } from './client';
-import { getThreadsAction } from '@/lib/actions';
+import { createContext, useContext, useState } from 'react';
+import { createThreadAction, getThreadsAction } from '@/lib/actions';
 
 type ThreadProviderProps = {
   threads: Thread[];
@@ -23,6 +13,7 @@ type Threads = {
   threads: Thread[];
   activeThread: Thread | undefined;
   handleActiveThreadId: (threadId: string) => void;
+  handleCreateThread: () => void;
 };
 
 const ThreadContext = createContext<Threads | null>(null);
@@ -38,12 +29,20 @@ export function ThreadProvider({ threads, children }: ThreadProviderProps) {
     setActiveThreadId(threadId);
   };
 
+  const handleCreateThread = async () => {
+    const thread = await createThreadAction();
+    if (thread) {
+      setActiveThreadId(thread.thread_id);
+    }
+  };
+
   return (
     <ThreadContext.Provider
       value={{
         threads,
         activeThread,
         handleActiveThreadId,
+        handleCreateThread,
       }}
     >
       {children}
