@@ -2,10 +2,7 @@
 
 import { Client, Thread } from '@langchain/langgraph-sdk';
 
-const apiUrl =
-  process.env.VERCEL_ENV === 'development'
-    ? 'http://127.0.0.1:2024'
-    : 'http://127.0.0.1:2024';
+const apiUrl = process.env.LANGGRAPH_API_URL;
 const client = new Client({ apiUrl });
 
 export async function getThreadsAction(): Promise<Thread[]> {
@@ -46,5 +43,16 @@ export async function createThreadAction() {
   } catch (error) {
     console.error('Failed to create thread:', error);
     throw error;
+  }
+}
+
+export async function checkGraphStatus(apiUrl: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${apiUrl}/info`);
+    return res.ok;
+  } catch (e) {
+    console.error(e);
+    // return false;
+    throw e;
   }
 }

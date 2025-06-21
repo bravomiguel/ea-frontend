@@ -10,8 +10,8 @@ export function ChatSidebar() {
     threads,
     createThread,
     isCreatingThread,
-    threadIdUrlParam,
-    setThreadIdUrlParam,
+    activeThreadId,
+    setActiveThreadId,
   } = useThreads();
 
   return (
@@ -42,11 +42,11 @@ export function ChatSidebar() {
                   className={cn(
                     'w-full justify-start text-sm font-normal text-left px-2',
                     {
-                      'bg-gray-100': threadIdUrlParam === thread.thread_id,
+                      'bg-gray-100': activeThreadId === thread.thread_id,
                     },
                   )}
                   onClick={() => {
-                    setThreadIdUrlParam(thread.thread_id);
+                    setActiveThreadId(thread.thread_id);
                   }}
                 >
                   {thread.thread_id.substring(0, 23)}...

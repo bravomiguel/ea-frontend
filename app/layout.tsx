@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { getThreadsAction } from '@/lib/actions';
 import { ThreadProvider } from '@/providers/thread-provider';
 import { QueryProvider } from '@/providers/query-provider';
+import { StreamProvider } from '@/providers/stream-provider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -19,9 +20,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'AI Chatbot',
+  title: 'Email Assistant',
   description:
-    'Modern AI Chatbot interface built with Next.js, Shadcn UI and Tailwind CSS',
+    'Modern AI Email Assistant interface built with Next.js, Shadcn UI and Tailwind CSS',
 };
 
 export default async function RootLayout({
@@ -39,7 +40,9 @@ export default async function RootLayout({
         <NuqsAdapter>
           <Toaster />
           <QueryProvider>
-            <ThreadProvider threads={threads}>{children}</ThreadProvider>
+            <ThreadProvider threads={threads}>
+              <StreamProvider>{children}</StreamProvider>
+            </ThreadProvider>
           </QueryProvider>
         </NuqsAdapter>
       </body>

@@ -17,8 +17,9 @@ type Threads = {
   isThreadsLoading: boolean;
   createThread: () => void;
   isCreatingThread: boolean;
-  threadIdUrlParam: string | null;
-  setThreadIdUrlParam: (threadId: string | null) => void;
+  activeThreadId: string | null;
+  setActiveThreadId: (threadId: string | null) => void;
+  refetchThreads: () => void;
 };
 
 const ThreadContext = createContext<Threads | null>(null);
@@ -27,11 +28,11 @@ export function ThreadProvider({
   threads: initialData,
   children,
 }: ThreadProviderProps) {
-  const [threadIdUrlParam, setThreadIdUrlParam] = useQueryState('threadId');
+  const [activeThreadId, setActiveThreadId] = useQueryState('threadId');
 
   const queryClient = useQueryClient();
 
-  const { data: threads, isLoading: isThreadsLoading } = useQuery({
+  const { data: threads, isLoading: isThreadsLoading, refetch: refetchThreads } = useQuery({
     queryKey: [`threads`],
     queryFn: async () => {
       const threads = await getThreadsAction();
@@ -55,9 +56,9 @@ export function ThreadProvider({
 
   useEffect(() => {
     if (newThread) {
-      setThreadIdUrlParam(newThread.thread_id);
+      setActiveThreadId(newThread.thread_id);
     }
-  }, [newThread, setThreadIdUrlParam]);
+  }, [newThread, setActiveThreadId]);
 
   return (
     <ThreadContext.Provider
@@ -66,8 +67,9 @@ export function ThreadProvider({
         isThreadsLoading,
         createThread,
         isCreatingThread,
-        threadIdUrlParam,
-        setThreadIdUrlParam,
+        activeThreadId,
+        setActiveThreadId,
+        refetchThreads,
       }}
     >
       {children}
