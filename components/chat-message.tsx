@@ -1,49 +1,42 @@
-import { cn } from "@/lib/utils"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Bot } from "lucide-react"
+import { Bot } from 'lucide-react';
+import { Message } from '@langchain/langgraph-sdk';
 
-export interface ChatMessageProps {
-  role: "user" | "assistant"
-  content: string
-  isLoading?: boolean
-}
+import { cn } from '@/lib/utils';
+import { getContentString } from '@/lib/utils';
+import ReactMarkdown from 'react-markdown';
 
-export function ChatMessage({ role, content, isLoading }: ChatMessageProps) {
+export function ChatMessage({
+  message,
+  isLoading,
+}: {
+  message: Message;
+  isLoading: boolean;
+}) {
   return (
     <div
-      className={cn(
-        "flex w-full items-start gap-4 py-4",
-        role === "assistant" ? "" : "justify-end"
-      )}
+      className={cn('flex w-full py-4 space-y-2 max-w-full', {
+        'justify-end': message.type === 'human',
+      })}
     >
-      {role === "assistant" && (
-        <Avatar className="mt-1 h-8 w-8">
-          <AvatarImage src="/bot-avatar.png" />
-          <AvatarFallback>
-            <Bot className="h-5 w-5" />
-          </AvatarFallback>
-        </Avatar>
-      )}
-      
-      <div className={cn(
-        "space-y-2 max-w-[80%]",
-        role === "user" ? "text-right" : "text-left"
-      )}>
-        <div className={cn(
-          "inline-block rounded-lg px-4 py-2 text-sm",
-          role === "assistant" ? "bg-muted" : "bg-primary text-primary-foreground"
-        )}>
-          {isLoading ? (
-            <div className="flex items-center space-x-2">
-              <div className="h-2 w-2 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.3s]"></div>
-              <div className="h-2 w-2 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.15s]"></div>
-              <div className="h-2 w-2 animate-bounce rounded-full bg-zinc-400"></div>
-            </div>
-          ) : (
-            <div className="whitespace-pre-line">{content}</div>
-          )}
-        </div>
-      </div>
+      {message.type === 'human' && <HumanMessage message={message} />}
+
+      {message.type === 'ai' && <AIMessage message={message} />}
     </div>
-  )
+  );
+}
+
+function HumanMessage({ message }: { message: Message }) {
+  return (
+    <div className="inline-block rounded-lg px-4 py-2 bg-primary text-primary-foreground self-end max-w-[80%]">
+      {getContentString(message.content)}
+    </div>
+  );
+}
+
+function AIMessage({ message }: { message: Message }) {
+  return (
+    <div className="py-1">
+      <ReactMarkdown>{getContentString(message.content)}</ReactMarkdown>
+    </div>
+  );
 }

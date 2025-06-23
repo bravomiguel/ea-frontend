@@ -5,9 +5,9 @@ import { toast } from 'sonner';
 import { Message, Checkpoint } from '@langchain/langgraph-sdk';
 import { v4 as uuidv4 } from 'uuid';
 
-// import { ScrollArea } from '@/components/ui/scroll-area';
-// import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
-// import { ChatInput } from '@/components/chat-input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ChatMessage } from '@/components/chat-message';
+import { ChatInput } from '@/components/chat-input';
 import { useThreads } from '@/providers/thread-provider';
 import { useStreamContext } from '@/providers/stream-provider';
 
@@ -19,9 +19,7 @@ export function ChatContainer() {
 
   const [firstTokenReceived, setFirstTokenReceived] = useState(false);
 
-  const stream = useStreamContext();
-  const messages = stream.messages;
-  const isLoading = stream.isLoading;
+  const { messages, ...stream } = useStreamContext();
 
   const lastError = useRef<string | undefined>(undefined);
 
@@ -70,7 +68,7 @@ export function ChatContainer() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || stream.isLoading) return;
     setFirstTokenReceived(false);
 
     const newHumanMessage: Message = {
@@ -123,29 +121,31 @@ export function ChatContainer() {
   );
   return (
     <div className="flex flex-col h-full">
-      {JSON.stringify(messages)}
-      {/* <ScrollArea className="flex-1 p-4">
+      {/* {JSON.stringify(messages)} */}
+      <ScrollArea className="flex-1 p-4">
         <div className="flex flex-col justify-end min-h-full">
           <div className="space-y-4 max-w-3xl mx-auto w-full">
-            <ChatMessage
+            {/* <ChatMessage
               role="assistant"
-              content={`Hello there!\nHow can I help you today?${
-                threadId ? ` (Thread ID: ${threadId})` : ''
-              }`}
-            />
+              content={`Hello there!\nHow can I help you today?`}
+            /> */}
 
             {messages.map((message, index) => (
-              <ChatMessage key={index} {...message} />
+              <ChatMessage
+                key={message.id || `${message.type}-${index}`}
+                message={message}
+                isLoading={stream.isLoading}
+              />
             ))}
 
-            {isLoading && (
+            {/* {stream.isLoading && (
               <ChatMessage role="assistant" content="" isLoading={true} />
-            )}
+            )} */}
           </div>
         </div>
       </ScrollArea>
 
-      <ChatInput onSend={handleSendMessage} disabled={isLoading} /> */}
+      <ChatInput onSend={() => {}} disabled={stream.isLoading} />
     </div>
   );
 }
