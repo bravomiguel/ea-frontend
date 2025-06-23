@@ -125,22 +125,20 @@ export function ChatContainer() {
       <ScrollArea className="flex-1 p-4">
         <div className="flex flex-col justify-end min-h-full">
           <div className="space-y-4 max-w-3xl mx-auto w-full">
-            {/* <ChatMessage
-              role="assistant"
-              content={`Hello there!\nHow can I help you today?`}
-            /> */}
-
-            {messages.map((message, index) => (
-              <ChatMessage
-                key={message.id || `${message.type}-${index}`}
-                message={message}
-                isLoading={stream.isLoading}
-              />
-            ))}
-
-            {/* {stream.isLoading && (
-              <ChatMessage role="assistant" content="" isLoading={true} />
-            )} */}
+            {messages.length === 0 ? (
+              <div className="text-left">
+                <h2 className="text-2xl font-semibold">Hello there!</h2>
+                <p className="text-xl text-muted-foreground">How can I help you today?</p>
+              </div>
+            ) : (
+              messages.map((message, index) => (
+                <ChatMessage
+                  key={message.id || `${message.type}-${index}`}
+                  message={message}
+                  isLoading={stream.isLoading}
+                />
+              ))
+            )}
           </div>
         </div>
       </ScrollArea>
