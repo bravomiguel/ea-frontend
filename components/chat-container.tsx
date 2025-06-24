@@ -23,11 +23,16 @@ export function ChatContainer() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+  const lastMessageLengthRef = useRef<number>(0);
+  const lastMessagesLengthRef = useRef<number>(0);
 
   // Scroll to bottom on initial render and when new messages arrive
-  const scrollToBottom = () => {
+  const scrollToBottom = (smooth = true) => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current.scrollIntoView({
+        behavior: smooth ? 'smooth' : 'auto',
+      });
     }
   };
 
@@ -35,19 +40,48 @@ export function ChatContainer() {
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLDivElement;
     const { scrollTop, scrollHeight, clientHeight } = target;
-    const isScrolledUp = scrollHeight - scrollTop - clientHeight > 100;
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
+    const isScrolledUp = !isAtBottom;
+
     setShowScrollButton(isScrolledUp);
+    setShouldAutoScroll(isAtBottom);
   };
 
   // Scroll to bottom on initial render
   useEffect(() => {
-    scrollToBottom();
+    scrollToBottom(false);
   }, []);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
-    scrollToBottom();
+    // If a new message has been added
+    if (messages.length > lastMessagesLengthRef.current) {
+      lastMessagesLengthRef.current = messages.length;
+      scrollToBottom();
+    }
   }, [messages.length]);
+
+  // Auto-scroll when content of the last message changes (streaming)
+  useEffect(() => {
+    if (messages.length === 0) return;
+
+    const lastMessage = messages[messages.length - 1];
+    if (!lastMessage || lastMessage.type !== 'ai') return;
+
+    const content =
+      typeof lastMessage.content === 'string'
+        ? lastMessage.content
+        : JSON.stringify(lastMessage.content);
+
+    const currentLength = content.length;
+
+    // If the message is growing (streaming) and we should auto-scroll
+    if (currentLength > lastMessageLengthRef.current && shouldAutoScroll) {
+      scrollToBottom(false); // Use instant scroll for streaming for smoother experience
+    }
+
+    lastMessageLengthRef.current = currentLength;
+  }, [messages, shouldAutoScroll]);
 
   // Error handling
   useEffect(() => {
@@ -79,24 +113,29 @@ export function ChatContainer() {
     }
   }, [stream.error]);
 
-  const chatStarted = !!activeThreadId || !!messages.length;
-  const hasNoAIOrToolMessages = !messages.find(
-    (m) => m.type === 'ai' || m.type === 'tool',
-  );
+  // const chatStarted = !!activeThreadId || !!messages.length;
+  // const hasNoAIOrToolMessages = !messages.find(
+  //   (m) => m.type === 'ai' || m.type === 'tool',
+  // );
   return (
     <div className="flex flex-col h-full relative">
-      {/* {JSON.stringify(messages)} */}
-      <div 
-        className="flex-1 p-4 overflow-auto" 
+      <div
+        className="flex-1 p-4 overflow-auto"
         onScroll={handleScroll}
         ref={scrollAreaRef}
       >
-        <div className="flex flex-col justify-end min-h-full">
+        <div
+          className={cn('flex flex-col justify-start min-h-full', {
+            'justify-center': messages.length === 0,
+          })}
+        >
           <div className="space-y-4 max-w-3xl mx-auto w-full">
-            {messages.length === 0 ? (
-              <div className="text-left">
+            {!stream.isLoading && messages.length === 0 ? (
+              <div className="text-center">
                 <h2 className="text-2xl font-semibold">Hello there!</h2>
-                <p className="text-xl text-muted-foreground">How can I help you today?</p>
+                <p className="text-xl text-muted-foreground">
+                  How can I help you today?
+                </p>
               </div>
             ) : (
               messages.map((message, index) => (
@@ -113,17 +152,17 @@ export function ChatContainer() {
       </div>
 
       {/* Scroll to bottom button */}
-      <div 
+      <div
         className="absolute left-1/2 transform -translate-x-1/2 z-10 transition-all duration-200"
         style={{ bottom: `${inputHeight + 8}px` }} // Position just above the input box with 8px gap
       >
         <Button
-          onClick={scrollToBottom}
+          onClick={(e) => scrollToBottom(true)}
           size="icon"
           variant="secondary"
           className={cn(
-            'rounded-full h-9 w-9 bg-gray-900 hover:bg-gray-700 flex items-center justify-center shadow-md transition-opacity duration-200',
-            showScrollButton ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            'rounded-full h-8 w-8 bg-gray-900 hover:bg-gray-700 flex items-center justify-center shadow-md transition-opacity duration-200',
+            showScrollButton ? 'opacity-100' : 'opacity-0 pointer-events-none',
           )}
           aria-label="Scroll to bottom"
         >
