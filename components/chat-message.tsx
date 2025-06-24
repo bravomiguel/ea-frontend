@@ -3,7 +3,7 @@ import { Message } from '@langchain/langgraph-sdk';
 
 import { cn } from '@/lib/utils';
 import { getContentString } from '@/lib/utils';
-import ReactMarkdown from 'react-markdown';
+import { MarkdownText } from '@/components/markdown-text';
 
 export function ChatMessage({
   message,
@@ -36,7 +36,7 @@ function HumanMessage({ message }: { message: Message }) {
 function AIMessage({ message }: { message: Message }) {
   return (
     <div className="py-1">
-      <ReactMarkdown>{getContentString(message.content)}</ReactMarkdown>
+      <MarkdownText>{getContentString(message.content)}</MarkdownText>
     </div>
   );
 }
