@@ -1,48 +1,85 @@
-import { useState } from 'react';
-import { PaperclipIcon, SendIcon } from 'lucide-react';
+'use client';
+
+import { SendIcon } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { v4 as uuidv4 } from 'uuid';
+import { Message } from '@langchain/langgraph-sdk';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useStreamContext } from '@/providers/stream-provider';
+// import { useStreamHelper } from '@/lib/hooks';
 
-interface ChatInputProps {
-  onSend: (message: string) => void;
-  disabled?: boolean;
-}
+export function ChatInput() {
+  const { submit, isLoading } = useStreamContext();
 
-export function ChatInput({ onSend, disabled }: ChatInputProps) {
-  const [input, setInput] = useState('');
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isValid },
+    watch,
+  } = useForm<{ message: string }>({
+    defaultValues: {
+      message: '',
+    },
+    mode: 'onChange',
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (input.trim()) {
-      onSend(input);
-      setInput('');
-    }
-  };
+  const message = watch('message');
+
+  // const { setFirstTokenReceived } = useStreamHelper();
+
+  const onSubmit = handleSubmit(async ({ message }) => {
+    if (!message.trim() || isLoading) return;
+    // setFirstTokenReceived(false);
+
+    const newHumanMessage: Message = {
+      id: uuidv4(),
+      type: 'human',
+      content: message,
+    };
+
+    // const toolMessages = ensureToolCallsHaveResponses(stream.messages);
+    submit(
+      {
+        messages: [
+          // ...toolMessages,
+          newHumanMessage,
+        ],
+      },
+      {
+        streamMode: ['values'],
+        optimisticValues: (prev) => ({
+          ...prev,
+          messages: [
+            ...(prev.messages ?? []),
+            // ...toolMessages,
+            newHumanMessage,
+          ],
+        }),
+      },
+    );
+
+    reset();
+  });
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full items-center p-4">
+    <form onSubmit={onSubmit} className="flex w-full items-center p-4">
       <div className="max-w-3xl mx-auto w-full relative flex items-center bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1.5">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="text-gray-400 h-8 w-8"
-        >
-          <PaperclipIcon className="h-5 w-5" />
-        </Button>
         <Input
           type="text"
           placeholder="Send a message..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={disabled}
+          disabled={isLoading}
           className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+          {...register('message', { required: true })}
         />
+
         <Button
           type="submit"
           size="icon"
           className="rounded-full h-8 w-8 bg-gray-900 hover:bg-gray-700 ml-2"
-          disabled={disabled || !input.trim()}
+          disabled={isLoading || !message?.trim() || !isValid}
         >
           <SendIcon className="h-4 w-4 text-white" />
         </Button>

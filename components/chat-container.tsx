@@ -1,9 +1,7 @@
 'use client';
 
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { Message, Checkpoint } from '@langchain/langgraph-sdk';
-import { v4 as uuidv4 } from 'uuid';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChatMessage } from '@/components/chat-message';
@@ -12,12 +10,7 @@ import { useThreads } from '@/providers/thread-provider';
 import { useStreamContext } from '@/providers/stream-provider';
 
 export function ChatContainer() {
-  // const [threadId, setThreadId] = useQueryState('threadId');
-  const { activeThreadId, setActiveThreadId } = useThreads();
-
-  const [input, setInput] = useState('');
-
-  const [firstTokenReceived, setFirstTokenReceived] = useState(false);
+  const { activeThreadId } = useThreads();
 
   const { messages, ...stream } = useStreamContext();
 
@@ -52,69 +45,6 @@ export function ChatContainer() {
     }
   }, [stream.error]);
 
-  // TODO: this should be part of the useStream hook
-  const prevMessageLength = useRef(0);
-  useEffect(() => {
-    if (
-      messages.length !== prevMessageLength.current &&
-      messages?.length &&
-      messages[messages.length - 1].type === 'ai'
-    ) {
-      setFirstTokenReceived(true);
-    }
-
-    prevMessageLength.current = messages.length;
-  }, [messages]);
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || stream.isLoading) return;
-    setFirstTokenReceived(false);
-
-    const newHumanMessage: Message = {
-      id: uuidv4(),
-      type: 'human',
-      content: input,
-    };
-
-    // const toolMessages = ensureToolCallsHaveResponses(stream.messages);
-    stream.submit(
-      {
-        messages: [
-          // ...toolMessages,
-          newHumanMessage,
-        ],
-      },
-      {
-        streamMode: ['values'],
-        optimisticValues: (prev) => ({
-          ...prev,
-          messages: [
-            ...(prev.messages ?? []),
-            // ...toolMessages,
-            newHumanMessage,
-          ],
-        }),
-      },
-    );
-
-    setInput('');
-  };
-
-  const handleRegenerate = (
-    parentCheckpoint: Checkpoint | null | undefined,
-  ) => {
-    // Do this so the loading state is correct
-    prevMessageLength.current = prevMessageLength.current - 1;
-
-    setFirstTokenReceived(false);
-
-    stream.submit(undefined, {
-      checkpoint: parentCheckpoint,
-      streamMode: ['values'],
-    });
-  };
-
   const chatStarted = !!activeThreadId || !!messages.length;
   const hasNoAIOrToolMessages = !messages.find(
     (m) => m.type === 'ai' || m.type === 'tool',
@@ -143,7 +73,7 @@ export function ChatContainer() {
         </div>
       </ScrollArea>
 
-      <ChatInput onSend={() => {}} disabled={stream.isLoading} />
+      <ChatInput />
     </div>
   );
 }
