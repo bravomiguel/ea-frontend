@@ -8,6 +8,7 @@ import { getThreadsAction } from '@/lib/actions';
 import { ThreadProvider } from '@/providers/thread-provider';
 import { QueryProvider } from '@/providers/query-provider';
 import { StreamProvider } from '@/providers/stream-provider';
+import { InputHeightProvider } from '@/providers/input-height-provider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -41,7 +42,9 @@ export default async function RootLayout({
           <Toaster />
           <QueryProvider>
             <ThreadProvider threads={threads}>
-              <StreamProvider>{children}</StreamProvider>
+              <InputHeightProvider>
+                <StreamProvider>{children}</StreamProvider>
+              </InputHeightProvider>
             </ThreadProvider>
           </QueryProvider>
         </NuqsAdapter>

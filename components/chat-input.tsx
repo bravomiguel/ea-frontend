@@ -5,18 +5,21 @@ import { FaStop } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
 import { Message } from '@langchain/langgraph-sdk';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useStreamContext } from '@/providers/stream-provider';
 import { useThreads } from '@/providers/thread-provider';
+import { useInputHeight } from '@/providers/input-height-provider';
 // import { useStreamHelper } from '@/lib/hooks';
 
 export function ChatInput() {
   const { submit, isLoading, stop } = useStreamContext();
   const { activeThreadId } = useThreads();
+  const { setInputHeight } = useInputHeight();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const {
     register,
@@ -50,6 +53,12 @@ export function ChatInput() {
       // Add overflow scrolling if content exceeds maxHeight
       textareaRef.current.style.overflowY =
         textareaRef.current.scrollHeight > maxHeight ? 'auto' : 'hidden';
+      
+      // Update the input height in the context
+      if (formRef.current) {
+        const formHeight = formRef.current.getBoundingClientRect().height;
+        setInputHeight(formHeight);
+      }
     }
   };
 
@@ -66,6 +75,14 @@ export function ChatInput() {
       textareaRef.current.focus();
     }
   }, [activeThreadId]);
+  
+  // Report initial input height after component mounts
+  useEffect(() => {
+    if (formRef.current) {
+      const formHeight = formRef.current.getBoundingClientRect().height;
+      setInputHeight(formHeight);
+    }
+  }, [setInputHeight]);
 
   // const { setFirstTokenReceived } = useStreamHelper();
 
@@ -118,7 +135,7 @@ export function ChatInput() {
   };
 
   return (
-    <form onSubmit={onSubmit} className="flex w-full p-4">
+    <form ref={formRef} onSubmit={onSubmit} className="flex w-full p-4">
       <div className="max-w-3xl mx-auto w-full relative bg-gray-100 rounded-lg ring-offset-background transition-all focus-within:ring-2 focus-within:ring-gray-600">
         {/* Container for textarea and button */}
         <div className="relative p-3">
