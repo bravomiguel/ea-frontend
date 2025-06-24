@@ -1,20 +1,16 @@
-import { Bot } from 'lucide-react';
+'use client';
+
+import { Loader2 } from 'lucide-react';
 import { Message } from '@langchain/langgraph-sdk';
 
 import { cn } from '@/lib/utils';
 import { getContentString } from '@/lib/utils';
 import { MarkdownText } from '@/components/markdown-text';
 
-export function ChatMessage({
-  message,
-  isLoading,
-}: {
-  message: Message;
-  isLoading: boolean;
-}) {
+export function ChatMessage({ message }: { message: Message }) {
   return (
     <div
-      className={cn('font-medium flex w-full py-4 space-y-2 max-w-full', {
+      className={cn('font-medium flex w-full py-4 max-w-full', {
         'justify-end': message.type === 'human',
       })}
     >
@@ -34,9 +30,5 @@ function HumanMessage({ message }: { message: Message }) {
 }
 
 function AIMessage({ message }: { message: Message }) {
-  return (
-    <div className="py-1">
-      <MarkdownText>{getContentString(message.content)}</MarkdownText>
-    </div>
-  );
+  return <MarkdownText>{getContentString(message.content)}</MarkdownText>;
 }

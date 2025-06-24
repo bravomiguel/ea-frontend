@@ -4,20 +4,19 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { ArrowDown } from 'lucide-react';
 
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChatMessage } from '@/components/chat-message';
 import { ChatInput } from '@/components/chat-input';
-import { useThreads } from '@/providers/thread-provider';
 import { useStreamContext } from '@/providers/stream-provider';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, hasToolCalls } from '@/lib/utils';
 import { useInputHeight } from '@/providers/input-height-provider';
+import { AIThinking } from './ai-thinking';
 
 export function ChatContainer() {
-  const { activeThreadId } = useThreads();
   const { inputHeight } = useInputHeight();
 
   const { messages, ...stream } = useStreamContext();
+  const lastMessage = messages[messages.length - 1];
 
   const lastError = useRef<string | undefined>(undefined);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -65,7 +64,6 @@ export function ChatContainer() {
   useEffect(() => {
     if (messages.length === 0) return;
 
-    const lastMessage = messages[messages.length - 1];
     if (!lastMessage || lastMessage.type !== 'ai') return;
 
     const content =
@@ -81,7 +79,7 @@ export function ChatContainer() {
     }
 
     lastMessageLengthRef.current = currentLength;
-  }, [messages, shouldAutoScroll]);
+  }, [messages, shouldAutoScroll, lastMessage]);
 
   // Error handling
   useEffect(() => {
@@ -90,7 +88,6 @@ export function ChatContainer() {
       return;
     }
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const message = (stream.error as any).message;
       if (!message || lastError.current === message) {
         // Message has already been logged. do not modify ref, return early.
@@ -130,7 +127,7 @@ export function ChatContainer() {
           })}
         >
           <div className="space-y-4 max-w-3xl mx-auto w-full">
-            {!stream.isLoading && messages.length === 0 ? (
+            {messages.length === 0 ? (
               <div className="text-center">
                 <h2 className="text-2xl font-semibold">Hello there!</h2>
                 <p className="text-xl text-muted-foreground">
@@ -138,13 +135,23 @@ export function ChatContainer() {
                 </p>
               </div>
             ) : (
-              messages.map((message, index) => (
-                <ChatMessage
-                  key={message.id || `${message.type}-${index}`}
-                  message={message}
-                  isLoading={stream.isLoading}
-                />
-              ))
+              <>
+                {messages
+                  .filter(
+                    (message) =>
+                      ['ai', 'human'].includes(message.type) &&
+                      !hasToolCalls(message),
+                  )
+                  .map((message, index) => (
+                    <ChatMessage
+                      key={message.id || `${message.type}-${index}`}
+                      message={message}
+                    />
+                  ))}
+                {stream.isLoading && lastMessage.type === 'human' && (
+                  <AIThinking />
+                )}
+              </>
             )}
             <div ref={messagesEndRef} />
           </div>

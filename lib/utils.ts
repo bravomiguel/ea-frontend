@@ -17,3 +17,12 @@ export function getContentString(content: Message["content"]): string {
     .map((c) => c.text);
   return texts.join(" ");
 }
+
+export function hasToolCalls(message: any): boolean {
+  return (
+    message &&
+    "tool_calls" in message &&
+    message.tool_calls &&
+    message.tool_calls.length > 0
+  );
+}
