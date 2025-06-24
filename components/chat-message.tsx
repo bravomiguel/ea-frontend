@@ -14,7 +14,7 @@ export function ChatMessage({
 }) {
   return (
     <div
-      className={cn('flex w-full py-4 space-y-2 max-w-full', {
+      className={cn('font-medium flex w-full py-4 space-y-2 max-w-full', {
         'justify-end': message.type === 'human',
       })}
     >
