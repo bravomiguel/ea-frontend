@@ -10,7 +10,6 @@ import {
   getThreadsAction,
 } from '@/lib/actions';
 import { useQueryState } from 'nuqs';
-import { useRouter } from 'next/navigation';
 
 type ThreadProviderProps = {
   threads: Thread[];
@@ -35,8 +34,6 @@ export function ThreadProvider({
   threads: initialData,
   children,
 }: ThreadProviderProps) {
-  const router = useRouter();
-
   const [activeThreadId, setActiveThreadId] = useQueryState('threadId');
 
   const queryClient = useQueryClient();
@@ -79,9 +76,9 @@ export function ThreadProvider({
       activeThreadId &&
       threads.findIndex((t) => t.thread_id === activeThreadId) === -1
     ) {
-      router.push('/');
+      setActiveThreadId(null);
     }
-  }, [activeThreadId, router, threads]);
+  }, [activeThreadId, threads, setActiveThreadId]);
 
   useEffect(() => {
     if (newThread) {
