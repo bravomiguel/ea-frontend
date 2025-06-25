@@ -10,7 +10,7 @@ import { useStreamContext } from '@/providers/stream-provider';
 import { Button } from '@/components/ui/button';
 import { cn, hasToolCalls } from '@/lib/utils';
 import { useInputHeight } from '@/providers/input-height-provider';
-import { AIThinking } from './ai-thinking';
+import { AIUpdate } from './ai-update';
 
 export function ChatContainer() {
   const { inputHeight } = useInputHeight();
@@ -148,9 +148,8 @@ export function ChatContainer() {
                       message={message}
                     />
                   ))}
-                {stream.isLoading && lastMessage.type === 'human' && (
-                  <AIThinking />
-                )}
+
+                <AIUpdate />
               </>
             )}
             <div ref={messagesEndRef} />
