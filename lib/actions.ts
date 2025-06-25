@@ -21,7 +21,7 @@ export async function getThreadsAction(): Promise<Thread[]> {
 
     const threads = await client.threads.search({
       metadata: {},
-      limit: 10,
+      limit: 100,
       sortBy: 'updated_at',
       sortOrder: 'desc',
     });
@@ -54,5 +54,17 @@ export async function checkGraphStatus(apiUrl: string): Promise<boolean> {
     console.error(e);
     // return false;
     throw e;
+  }
+}
+
+export async function deleteThreadAction(threadId: string) {
+  try {
+    if (!apiUrl) return;
+
+    await client.threads.delete(threadId);
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to delete thread:', error);
+    throw error;
   }
 }

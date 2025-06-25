@@ -5,7 +5,7 @@ import { FaStop } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
 import { Message } from '@langchain/langgraph-sdk';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,7 +15,7 @@ import { useInputHeight } from '@/providers/input-height-provider';
 // import { useStreamHelper } from '@/lib/hooks';
 
 export function ChatInput() {
-  const { submit, isLoading, stop } = useStreamContext();
+  const { submit, isLoading, stop, interrupt } = useStreamContext();
   const { activeThreadId } = useThreads();
   const { setInputHeight } = useInputHeight();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -143,7 +143,7 @@ export function ChatInput() {
           <div className="pb-12">
             <Textarea
               placeholder="Send a message..."
-              disabled={isLoading}
+              disabled={isLoading || !!interrupt}
               className="min-h-[24px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 rounded-md w-full"
               {...register('message', {
                 required: true,

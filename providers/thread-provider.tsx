@@ -4,8 +4,13 @@ import { Thread } from '@langchain/langgraph-sdk';
 import { createContext, useContext, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { createThreadAction, getThreadsAction } from '@/lib/actions';
+import {
+  createThreadAction,
+  deleteThreadAction,
+  getThreadsAction,
+} from '@/lib/actions';
 import { useQueryState } from 'nuqs';
+import { useRouter } from 'next/navigation';
 
 type ThreadProviderProps = {
   threads: Thread[];
@@ -17,6 +22,8 @@ type Threads = {
   isThreadsLoading: boolean;
   createThread: () => void;
   isCreatingThread: boolean;
+  deleteThread: (threadId: string) => void;
+  isDeletingThread: boolean;
   activeThreadId: string | null;
   setActiveThreadId: (threadId: string | null) => void;
   refetchThreads: () => void;
@@ -28,11 +35,17 @@ export function ThreadProvider({
   threads: initialData,
   children,
 }: ThreadProviderProps) {
+  const router = useRouter();
+
   const [activeThreadId, setActiveThreadId] = useQueryState('threadId');
 
   const queryClient = useQueryClient();
 
-  const { data: threads, isLoading: isThreadsLoading, refetch: refetchThreads } = useQuery({
+  const {
+    data: threads,
+    isLoading: isThreadsLoading,
+    refetch: refetchThreads,
+  } = useQuery({
     queryKey: [`threads`],
     queryFn: async () => {
       const threads = await getThreadsAction();
@@ -54,6 +67,22 @@ export function ThreadProvider({
     },
   });
 
+  const { mutate: deleteThread, isPending: isDeletingThread } = useMutation({
+    mutationFn: deleteThreadAction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`threads`] });
+    },
+  });
+
+  useEffect(() => {
+    if (
+      activeThreadId &&
+      threads.findIndex((t) => t.thread_id === activeThreadId) === -1
+    ) {
+      router.push('/');
+    }
+  }, [activeThreadId, router, threads]);
+
   useEffect(() => {
     if (newThread) {
       setActiveThreadId(newThread.thread_id);
@@ -67,6 +96,8 @@ export function ThreadProvider({
         isThreadsLoading,
         createThread,
         isCreatingThread,
+        deleteThread,
+        isDeletingThread,
         activeThreadId,
         setActiveThreadId,
         refetchThreads,
