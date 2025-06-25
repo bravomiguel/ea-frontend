@@ -1,6 +1,5 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
 import { Message } from '@langchain/langgraph-sdk';
 
 import { cn } from '@/lib/utils';
