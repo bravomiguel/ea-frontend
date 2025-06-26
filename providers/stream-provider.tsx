@@ -8,7 +8,7 @@ import {
   type UIMessage,
   type RemoveUIMessage,
 } from '@langchain/langgraph-sdk/react-ui';
-
+import { updateThreadAction } from '@/lib/actions';
 import { useThreads } from './thread-provider';
 
 type StreamProviderProps = {
@@ -25,6 +25,9 @@ const useTypedStream = useStream<
       ui?: (UIMessage | RemoveUIMessage)[] | UIMessage | RemoveUIMessage;
     };
     CustomEventType: UIMessage | RemoveUIMessage;
+    ConfigurableType: {
+      user_id: string;
+    };
   }
 >;
 
@@ -44,7 +47,8 @@ export function StreamProvider({ children }: StreamProviderProps) {
         return { ...prev, ui };
       });
     },
-    onThreadId: (id) => {
+    onThreadId: async (id) => {
+      await updateThreadAction(id);
       refetchThreads();
       setActiveThreadId(id);
       // Refetch threads list when thread ID changes.

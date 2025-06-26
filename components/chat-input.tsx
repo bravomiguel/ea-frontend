@@ -12,9 +12,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { useStreamContext } from '@/providers/stream-provider';
 import { useThreads } from '@/providers/thread-provider';
 import { useInputHeight } from '@/providers/input-height-provider';
-// import { useStreamHelper } from '@/lib/hooks';
+import { useSession } from 'next-auth/react';
 
 export function ChatInput() {
+  const { data: session, status } = useSession();
   const { submit, isLoading, stop, interrupt } = useStreamContext();
   const { activeThreadId } = useThreads();
   const { setInputHeight } = useInputHeight();
@@ -53,7 +54,7 @@ export function ChatInput() {
       // Add overflow scrolling if content exceeds maxHeight
       textareaRef.current.style.overflowY =
         textareaRef.current.scrollHeight > maxHeight ? 'auto' : 'hidden';
-      
+
       // Update the input height in the context
       if (formRef.current) {
         const formHeight = formRef.current.getBoundingClientRect().height;
@@ -75,7 +76,7 @@ export function ChatInput() {
       textareaRef.current.focus();
     }
   }, [activeThreadId]);
-  
+
   // Report initial input height after component mounts
   useEffect(() => {
     if (formRef.current) {
@@ -87,7 +88,7 @@ export function ChatInput() {
   // const { setFirstTokenReceived } = useStreamHelper();
 
   const onSubmit = handleSubmit(async ({ message }) => {
-    if (!message.trim() || isLoading) return;
+    if (!message.trim() || isLoading || !session?.user?.id) return;
     // setFirstTokenReceived(false);
 
     const newHumanMessage: Message = {
@@ -114,6 +115,7 @@ export function ChatInput() {
             newHumanMessage,
           ],
         }),
+        config: { configurable: { user_id: session.user.id } },
       },
     );
 

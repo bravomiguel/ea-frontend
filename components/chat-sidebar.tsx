@@ -22,7 +22,7 @@ export function ChatSidebar() {
     activeThreadId,
     setActiveThreadId,
   } = useThreads();
-  
+
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   return (
@@ -41,18 +41,19 @@ export function ChatSidebar() {
 
       <div className="flex flex-col flex-1 overflow-auto">
         <div className="p-2">
-          {threads.length > 0 ? (
+          {threads.length > 0 && (
             <h3 className="text-xs text-gray-500 px-2 py-1">Chats</h3>
-          ) : (
-            <h3 className="text-sm text-gray-500 px-2 py-1">Start new chat</h3>
           )}
           <div className="space-y-1.5">
             {threads.map((thread) => (
               <div
                 key={thread.thread_id}
-                className={cn('flex items-center group relative rounded-lg hover:bg-gray-50 transition-colors', {
-                  'bg-gray-100': activeThreadId === thread.thread_id,
-                })}
+                className={cn(
+                  'flex items-center group relative rounded-lg hover:bg-gray-50 transition-colors',
+                  {
+                    'bg-gray-100': activeThreadId === thread.thread_id,
+                  },
+                )}
               >
                 <Button
                   variant="ghost"
@@ -65,14 +66,17 @@ export function ChatSidebar() {
                 >
                   {thread.thread_id.substring(0, 23)}...
                 </Button>
-                <div className={cn(
-                  "absolute right-1 opacity-0 transition-opacity",
-                  {
-                    "opacity-100": openMenuId === thread.thread_id,
-                    "group-hover:opacity-100": openMenuId !== thread.thread_id
-                  }
-                )}>
-                  <DropdownMenu 
+                <div
+                  className={cn(
+                    'absolute right-1 opacity-0 transition-opacity',
+                    {
+                      'opacity-100': openMenuId === thread.thread_id,
+                      'group-hover:opacity-100':
+                        openMenuId !== thread.thread_id,
+                    },
+                  )}
+                >
+                  <DropdownMenu
                     open={openMenuId === thread.thread_id}
                     onOpenChange={(open) => {
                       setOpenMenuId(open ? thread.thread_id : null);

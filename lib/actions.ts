@@ -1,12 +1,17 @@
 'use server';
 
 import { Client, Thread } from '@langchain/langgraph-sdk';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 
 const apiUrl = process.env.LANGGRAPH_API_URL;
 const client = new Client({ apiUrl });
 
 export async function getThreadsAction(): Promise<Thread[]> {
   try {
+    const session = await auth();
+    if (!session?.user?.id) redirect('/auth/signin');
+
     if (!apiUrl) return [];
 
     // List all assistants
@@ -19,8 +24,10 @@ export async function getThreadsAction(): Promise<Thread[]> {
     // We auto-create an assistant for each graph you register in config.
     // const agent = assistants[0];
 
+    console.log({ session });
+
     const threads = await client.threads.search({
-      metadata: {},
+      metadata: { user_id: session.user.id },
       limit: 100,
       sortBy: 'updated_at',
       sortOrder: 'desc',
@@ -35,9 +42,14 @@ export async function getThreadsAction(): Promise<Thread[]> {
 
 export async function createThreadAction() {
   try {
+    const session = await auth();
+    if (!session?.user?.id) redirect('/auth/signin');
+
     if (!apiUrl) return;
 
-    const thread = await client.threads.create();
+    const thread = await client.threads.create({
+      metadata: { user_id: session.user.id },
+    });
 
     return thread;
   } catch (error) {
@@ -65,6 +77,24 @@ export async function deleteThreadAction(threadId: string) {
     return { success: true };
   } catch (error) {
     console.error('Failed to delete thread:', error);
+    throw error;
+  }
+}
+
+export async function updateThreadAction(threadId: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) redirect('/auth/signin');
+
+    if (!apiUrl) return;
+
+    const thread = await client.threads.update(threadId, {
+      metadata: { user_id: session.user.id },
+    });
+
+    return thread;
+  } catch (error) {
+    console.error('Failed to update thread:', error);
     throw error;
   }
 }

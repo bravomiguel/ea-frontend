@@ -52,6 +52,8 @@ export function ThreadProvider({
     refetchOnMount: false,
   });
 
+  // console.log({ threads })
+
   const {
     data: newThread,
     mutate: createThread,
@@ -71,14 +73,15 @@ export function ThreadProvider({
     },
   });
 
-  useEffect(() => {
-    if (
-      activeThreadId &&
-      threads.findIndex((t) => t.thread_id === activeThreadId) === -1
-    ) {
-      setActiveThreadId(null);
-    }
-  }, [activeThreadId, threads, setActiveThreadId]);
+  // If the active thread is not in the list, set it to null
+  // useEffect(() => {
+  //   if (
+  //     activeThreadId &&
+  //     threads.findIndex((t) => t.thread_id === activeThreadId) === -1
+  //   ) {
+  //     setActiveThreadId(null);
+  //   }
+  // }, [activeThreadId, threads, setActiveThreadId]);
 
   useEffect(() => {
     if (newThread) {

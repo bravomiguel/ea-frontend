@@ -10,6 +10,8 @@ import { ThreadProvider } from '@/providers/thread-provider';
 import { QueryProvider } from '@/providers/query-provider';
 import { StreamProvider } from '@/providers/stream-provider';
 import { InputHeightProvider } from '@/providers/input-height-provider';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -32,6 +34,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
+  if (!session) redirect('/auth/signin');
+
   const threads = await getThreadsAction();
 
   return (
