@@ -12,6 +12,8 @@ export async function getThreadsAction(): Promise<Thread[]> {
     const session = await auth();
     if (!session?.user?.id) redirect('/auth/signin');
 
+    console.log({ user: session.user });
+
     if (!apiUrl) return [];
 
     // List all assistants

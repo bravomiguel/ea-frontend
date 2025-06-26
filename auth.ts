@@ -32,9 +32,17 @@ export const authConfig: NextAuthConfig = {
       // For all other paths, require authentication
       return isLoggedIn;
     },
-    jwt({ token, user }) {
+    jwt({ token, user, account, profile }) {
       if (user) {
-        token.id = user.id;
+        // If we have a Google provider, use the sub claim as the stable identifier
+        if (account?.provider === 'google' && profile?.sub) {
+          // Use the sub claim directly as it's designed to be a stable, unique identifier
+          // This ensures the same user always gets the same ID across sessions
+          token.id = profile.sub;
+        } else {
+          // For other providers or if sub is not available, use the existing ID
+          token.id = user.id;
+        }
       }
       return token;
     },
