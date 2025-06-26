@@ -17,12 +17,11 @@ const toolset = new LangGraphToolSet({
 export async function getThreadsAction(): Promise<Thread[]> {
   try {
     const session = await auth();
-    if (!session?.user?.id) redirect('/auth/signin');
 
     if (!apiUrl) return [];
 
     const threads = await client.threads.search({
-      metadata: { user_id: session.user.id },
+      metadata: { user_id: session?.user?.id },
       limit: 100,
       sortBy: 'updated_at',
       sortOrder: 'desc',
@@ -148,10 +147,9 @@ export async function waitForConnectionAction(connectedAccountId: string) {
 export async function checkConnectionAction(appName: string) {
   try {
     const session = await auth();
-    if (!session?.user?.id) redirect('/auth/signin');
-    const userId = session.user.id;
+    const userId = session?.user?.id;
 
-    const entity = await toolset.getEntity(userId);
+    const entity = await toolset.getEntity(userId!);
 
     // Check for specific app connection
     try {

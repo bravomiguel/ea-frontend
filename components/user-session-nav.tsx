@@ -69,7 +69,7 @@ export function UserSessionNav() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })}>
+        <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/auth/signin' })}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>
