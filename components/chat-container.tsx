@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { ArrowDown } from 'lucide-react';
-
 import { ChatMessage } from '@/components/chat-message';
 import { ChatInput } from '@/components/chat-input';
 import { useStreamContext } from '@/providers/stream-provider';
@@ -11,9 +10,12 @@ import { Button } from '@/components/ui/button';
 import { cn, hasToolCalls } from '@/lib/utils';
 import { useInputHeight } from '@/providers/input-height-provider';
 import { AIUpdate } from './ai-update';
+import { useComposioContext } from '@/providers/composio-provider';
+import { ConnectGmailCard } from '@/components/connect-gmail-card';
 
 export function ChatContainer() {
   const { inputHeight } = useInputHeight();
+  const { hasGmailConnection, handleConnect, isConnecting } = useComposioContext();
 
   const { messages, ...stream } = useStreamContext();
   const lastMessage = messages[messages.length - 1];
@@ -123,60 +125,67 @@ export function ChatContainer() {
       >
         <div
           className={cn('flex flex-col justify-start min-h-full', {
-            'justify-center': messages.length === 0,
+            'justify-center': messages.length === 0 || !hasGmailConnection,
           })}
         >
-          <div className="space-y-4 max-w-3xl mx-auto w-full">
-            {messages.length === 0 ? (
-              <div className="text-center">
-                <h2 className="text-2xl font-semibold">Hello there!</h2>
-                <p className="text-xl text-muted-foreground">
-                  How can I help you today?
-                </p>
-              </div>
-            ) : (
-              <>
-                {messages
-                  .filter(
-                    (message) =>
-                      ['ai', 'human'].includes(message.type) &&
-                      !hasToolCalls(message),
-                  )
-                  .map((message, index) => (
-                    <ChatMessage
-                      key={message.id || `${message.type}-${index}`}
-                      message={message}
-                    />
-                  ))}
+          {!hasGmailConnection ? (
+            <ConnectGmailCard />
+          ) : (
+            <div className="space-y-4 max-w-3xl mx-auto w-full">
+              {messages.length === 0 ? (
+                <div className="text-center">
+                  <h2 className="text-2xl font-semibold">Hello there!</h2>
+                  <p className="text-xl text-muted-foreground">
+                    How can I help you today?
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {messages
+                    .filter(
+                      (message) =>
+                        ['ai', 'human'].includes(message.type) &&
+                        !hasToolCalls(message),
+                    )
+                    .map((message, index) => (
+                      <ChatMessage
+                        key={message.id || `${message.type}-${index}`}
+                        message={message}
+                      />
+                    ))}
 
-                <AIUpdate />
-              </>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+                  <AIUpdate />
+                </>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Scroll to bottom button */}
-      <div
-        className="absolute left-1/2 transform -translate-x-1/2 z-10 transition-all duration-200"
-        style={{ bottom: `${inputHeight + 8}px` }} // Position just above the input box with 8px gap
-      >
-        <Button
-          onClick={(e) => scrollToBottom(true)}
-          size="icon"
-          variant="secondary"
-          className={cn(
-            'rounded-full h-8 w-8 bg-gray-900 hover:bg-gray-700 flex items-center justify-center shadow-md transition-opacity duration-200',
-            showScrollButton ? 'opacity-100' : 'opacity-0 pointer-events-none',
-          )}
-          aria-label="Scroll to bottom"
+      {/* Scroll to bottom button - Only show when hasGmailConnection is true */}
+      {hasGmailConnection && (
+        <div
+          className="absolute left-1/2 transform -translate-x-1/2 z-10 transition-all duration-200"
+          style={{ bottom: `${inputHeight + 8}px` }} // Position just above the input box with 8px gap
         >
-          <ArrowDown className="h-5 w-5 text-white" />
-        </Button>
-      </div>
+          <Button
+            onClick={(e) => scrollToBottom(true)}
+            size="icon"
+            variant="secondary"
+            className={cn(
+              'rounded-full h-8 w-8 bg-gray-900 hover:bg-gray-700 flex items-center justify-center shadow-md transition-opacity duration-200',
+              showScrollButton ? 'opacity-100' : 'opacity-0 pointer-events-none',
+            )}
+            aria-label="Scroll to bottom"
+          >
+            <ArrowDown className="h-5 w-5 text-white" />
+          </Button>
+        </div>
+      )}
 
-      <ChatInput />
+      {/* Only show ChatInput when hasGmailConnection is true */}
+      {hasGmailConnection && <ChatInput />}
     </div>
   );
 }

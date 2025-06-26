@@ -1,32 +1,25 @@
 'use server';
 
 import { Client, Thread } from '@langchain/langgraph-sdk';
-import { auth } from '@/auth';
+import { LangGraphToolSet } from 'composio-core';
 import { redirect } from 'next/navigation';
+
+import { auth } from '@/auth';
 
 const apiUrl = process.env.LANGGRAPH_API_URL;
 const client = new Client({ apiUrl });
+
+// Initialize the toolset with your API key
+const toolset = new LangGraphToolSet({
+  apiKey: process.env.COMPOSIO_API_KEY!,
+});
 
 export async function getThreadsAction(): Promise<Thread[]> {
   try {
     const session = await auth();
     if (!session?.user?.id) redirect('/auth/signin');
 
-    console.log({ user: session.user });
-
     if (!apiUrl) return [];
-
-    // List all assistants
-    // const assistants = await client.assistants.search({
-    //   metadata: null,
-    //   offset: 0,
-    //   limit: 10,
-    // });
-
-    // We auto-create an assistant for each graph you register in config.
-    // const agent = assistants[0];
-
-    console.log({ session });
 
     const threads = await client.threads.search({
       metadata: { user_id: session.user.id },
@@ -98,5 +91,88 @@ export async function updateThreadAction(threadId: string) {
   } catch (error) {
     console.error('Failed to update thread:', error);
     throw error;
+  }
+}
+
+export async function initiateConnectionAction(appName: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) redirect('/auth/signin');
+    const userId = session.user.id;
+
+    // Get entity for the user
+    const entity = await toolset.getEntity(userId);
+
+    // Initiate connection - this calls Entity.initiateConnection internally
+    const connectionRequest = await entity.initiateConnection({
+      appName: appName,
+      redirectUri: `http://localhost:3000`,
+    });
+
+    // Return connection details for OAuth flow
+    return {
+      success: true,
+      redirectUrl: connectionRequest.redirectUrl,
+      connectedAccountId: connectionRequest.connectedAccountId,
+      connectionStatus: connectionRequest.connectionStatus,
+    };
+  } catch (error) {
+    console.error('Connection initiation failed:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+export async function waitForConnectionAction(connectedAccountId: string) {
+  try {
+    // Poll for connection status
+    const connection = await toolset.client.connectedAccounts.get({
+      connectedAccountId,
+    });
+
+    return {
+      success: true,
+      status: connection.status,
+      isActive: connection.status === 'ACTIVE',
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+export async function checkConnectionAction(appName: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) redirect('/auth/signin');
+    const userId = session.user.id;
+
+    const entity = await toolset.getEntity(userId);
+
+    // Check for specific app connection
+    try {
+      const connection = await entity.getConnection({ app: appName });
+      return {
+        hasConnection: !!connection && connection.status === 'ACTIVE',
+        connection: connection,
+        appName: appName,
+      };
+    } catch (error) {
+      return {
+        hasConnection: false,
+        connection: null,
+        appName: appName,
+      };
+    }
+  } catch (error) {
+    console.error('Error checking connections:', error);
+    return {
+      hasConnection: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
   }
 }

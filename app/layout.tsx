@@ -3,16 +3,15 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { SessionProvider } from 'next-auth/react';
-import { headers } from 'next/headers';
 
 import { Toaster } from '@/components/ui/sonner';
-import { getThreadsAction } from '@/lib/actions';
+import { checkConnectionAction, getThreadsAction } from '@/lib/actions';
 import { ThreadProvider } from '@/providers/thread-provider';
 import { QueryProvider } from '@/providers/query-provider';
 import { StreamProvider } from '@/providers/stream-provider';
 import { InputHeightProvider } from '@/providers/input-height-provider';
 import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
+import { ComposioProvider } from '@/providers/composio-provider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -35,11 +34,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
-  
-  // Only fetch threads if user is authenticated
-  // This is safe because middleware will handle redirects
-  const threads = session ? await getThreadsAction() : [];
+  //fetch threads
+  const threads = await getThreadsAction();
+  const { hasConnection } = await checkConnectionAction('gmail');
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -52,7 +49,11 @@ export default async function RootLayout({
             <QueryProvider>
               <ThreadProvider threads={threads}>
                 <InputHeightProvider>
-                  <StreamProvider>{children}</StreamProvider>
+                  <StreamProvider>
+                    <ComposioProvider hasGmailConnection={hasConnection}>
+                      {children}
+                    </ComposioProvider>
+                  </StreamProvider>
                 </InputHeightProvider>
               </ThreadProvider>
             </QueryProvider>
