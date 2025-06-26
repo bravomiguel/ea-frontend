@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { SessionProvider } from 'next-auth/react';
+import { headers } from 'next/headers';
 
 import { Toaster } from '@/components/ui/sonner';
 import { getThreadsAction } from '@/lib/actions';
@@ -35,10 +36,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
-
-  if (!session) redirect('/auth/signin');
-
-  const threads = await getThreadsAction();
+  
+  // Only fetch threads if user is authenticated
+  // This is safe because middleware will handle redirects
+  const threads = session ? await getThreadsAction() : [];
 
   return (
     <html lang="en" suppressHydrationWarning>

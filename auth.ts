@@ -13,24 +13,24 @@ export const authConfig: NextAuthConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       
-      // If the user is trying to access the sign-in page, allow it
-      if (nextUrl.pathname === '/auth/signin') {
-        // If already logged in, redirect to home
-        if (isLoggedIn) {
-          return Response.redirect(new URL('/', nextUrl));
-        }
+      // Public paths that don't require authentication
+      const publicPaths = [
+        '/auth/signin',
+        '/auth/error',
+      ];
+      
+      // Check if the current path is public
+      const isPublicPath = publicPaths.some(path => 
+        nextUrl.pathname === path || nextUrl.pathname.startsWith(`${path}/`)
+      );
+      
+      // If the path is public, allow access regardless of auth status
+      if (isPublicPath) {
         return true;
       }
       
-      // If the user is not logged in, redirect to sign-in page
-      if (!isLoggedIn) {
-        const signInUrl = new URL('/auth/signin', nextUrl);
-        signInUrl.searchParams.set('callbackUrl', nextUrl.pathname);
-        return Response.redirect(signInUrl);
-      }
-      
-      // If the user is logged in, allow access to all pages
-      return true;
+      // For all other paths, require authentication
+      return isLoggedIn;
     },
     jwt({ token, user }) {
       if (user) {

@@ -1,3 +1,4 @@
+// Use NextAuth's built-in middleware
 export { auth as middleware } from "./auth";
 
 export const config = {
