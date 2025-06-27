@@ -61,7 +61,6 @@ export function ThreadProvider({
   } = useMutation({
     mutationFn: createThreadAction,
     onSuccess: () => {
-      // revalidate data or show success toast
       queryClient.invalidateQueries({ queryKey: [`threads`] });
     },
   });
@@ -71,17 +70,10 @@ export function ThreadProvider({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`threads`] });
     },
+    onSettled: () => {
+      setActiveThreadId(null);
+    },
   });
-
-  // If the active thread is not in the list, set it to null
-  // useEffect(() => {
-  //   if (
-  //     activeThreadId &&
-  //     threads.findIndex((t) => t.thread_id === activeThreadId) === -1
-  //   ) {
-  //     setActiveThreadId(null);
-  //   }
-  // }, [activeThreadId, threads, setActiveThreadId]);
 
   useEffect(() => {
     if (newThread) {

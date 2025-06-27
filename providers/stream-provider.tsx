@@ -10,6 +10,7 @@ import {
 } from '@langchain/langgraph-sdk/react-ui';
 import { updateThreadAction } from '@/lib/actions';
 import { useThreads } from './thread-provider';
+import { sleep } from '@/lib/utils';
 
 type StreamProviderProps = {
   children: React.ReactNode;
@@ -49,9 +50,10 @@ export function StreamProvider({ children }: StreamProviderProps) {
       });
     },
     onThreadId: async (id) => {
+      // await sleep(1000);
       await updateThreadAction(id);
-      refetchThreads();
       setActiveThreadId(id);
+      refetchThreads();
       // Refetch threads list when thread ID changes.
       // Wait for some seconds before fetching so we're able to get the new thread that was created.
       // sleep().then(() => getThreads().then(setThreads).catch(console.error));
