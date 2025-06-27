@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { useStream } from '@langchain/langgraph-sdk/react';
 import { type Message } from '@langchain/langgraph-sdk';
 import {
@@ -16,7 +16,11 @@ type StreamProviderProps = {
   children: React.ReactNode;
 };
 
-export type StateType = { messages: Message[]; ui?: UIMessage[] };
+export type StateType = {
+  messages: Message[];
+  ui?: UIMessage[];
+  thread_title: string;
+};
 
 const useTypedStream = useStream<
   StateType,
@@ -24,6 +28,7 @@ const useTypedStream = useStream<
     UpdateType: {
       messages?: Message[] | Message | string;
       ui?: (UIMessage | RemoveUIMessage)[] | UIMessage | RemoveUIMessage;
+      thread_title?: string;
     };
     CustomEventType: UIMessage | RemoveUIMessage;
     ConfigurableType: {
@@ -59,6 +64,15 @@ export function StreamProvider({ children }: StreamProviderProps) {
       // sleep().then(() => getThreads().then(setThreads).catch(console.error));
     },
   });
+
+  useEffect(() => {
+    if (
+      streamValue.values.thread_title &&
+      streamValue.values.thread_title.length > 0
+    ) {
+      refetchThreads();
+    }
+  }, [streamValue.values.thread_title, refetchThreads]);
 
   return (
     <StreamContext.Provider value={streamValue}>

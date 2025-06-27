@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { PlusIcon, Trash2, MoreHorizontalIcon } from 'lucide-react';
 import { useThreads } from '@/providers/thread-provider';
-import { cn } from '@/lib/utils';
+import { cn, hasValidThreadTitle } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,11 +44,11 @@ export function ChatSidebar() {
 
       <div className="flex flex-col flex-1 overflow-auto">
         <div className="p-2">
-          {threads.length > 0 && (
+          {threads.filter(hasValidThreadTitle).length > 0 && (
             <h3 className="text-xs text-gray-500 px-2 py-1">Chats</h3>
           )}
           <div className="space-y-1.5">
-            {threads.map((thread) => (
+            {threads.filter(hasValidThreadTitle).map((thread) => (
               <div
                 key={thread.thread_id}
                 className={cn(
@@ -67,7 +67,9 @@ export function ChatSidebar() {
                     setActiveThreadId(thread.thread_id);
                   }}
                 >
-                  {thread.thread_id.substring(0, 23)}...
+                  {/* {thread.thread_id.substring(0, 23)}... */}
+                  {thread.values.thread_title ??
+                    `${thread.thread_id.substring(0, 23)}...`}
                 </Button>
                 <div
                   className={cn(

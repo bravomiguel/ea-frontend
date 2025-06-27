@@ -1,6 +1,8 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import type { Message } from '@langchain/langgraph-sdk';
+import { Thread } from '@langchain/langgraph-sdk';
+import { ThreadState } from './types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -28,5 +30,18 @@ export function hasToolCalls(message: any): boolean {
     // message.tool_calls.some(
     //   (tc: any) => tc.args && Object.keys(tc.args).length > 0,
     // )
+  );
+}
+
+/**
+ * Predicate function to check if a thread has a valid title
+ * @param thread Thread object to check
+ * @returns Boolean indicating if the thread has a valid title
+ */
+export function hasValidThreadTitle(thread: Thread<ThreadState>): boolean {
+  return !!(
+    thread.values && 
+    thread.values.thread_title &&
+    thread.values.thread_title.length > 0
   );
 }

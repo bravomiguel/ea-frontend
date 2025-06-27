@@ -53,8 +53,10 @@ function ReviewEmailCard() {
 
   const interruptValue = interrupt?.value as EmailInterruptValue | undefined;
 
+  console.log({ interruptValue });
+
   const [messageBody, setMessageBody] = useState<string>(
-    interruptValue?.message_body || '',
+    interruptValue?.message_body || interruptValue?.body || '',
   );
   const [showFeedback, setShowFeedback] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<string>('');

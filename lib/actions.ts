@@ -5,6 +5,7 @@ import { LangGraphToolSet } from 'composio-core';
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
+import { ThreadState } from './types';
 
 const apiUrl = process.env.LANGGRAPH_API_URL;
 const client = new Client({ apiUrl });
@@ -14,18 +15,18 @@ const toolset = new LangGraphToolSet({
   apiKey: process.env.COMPOSIO_API_KEY!,
 });
 
-export async function getThreadsAction(): Promise<Thread[]> {
+export async function getThreadsAction(): Promise<Thread<ThreadState>[]> {
   try {
     const session = await auth();
 
     if (!apiUrl) return [];
 
-    const threads = await client.threads.search({
+    const threads = (await client.threads.search({
       metadata: { user_id: session?.user?.id },
       limit: 100,
       sortBy: 'updated_at',
       sortOrder: 'desc',
-    });
+    })) as Thread<ThreadState>[];
 
     return threads;
   } catch (error) {
@@ -34,18 +35,18 @@ export async function getThreadsAction(): Promise<Thread[]> {
   }
 }
 
-export async function createThreadAction() {
+export async function createThreadAction(): Promise<Thread<ThreadState>> {
   try {
     const session = await auth();
     if (!session?.user?.id) redirect('/auth/signin');
 
-    if (!apiUrl) return;
+    // if (!apiUrl) return;
 
     const thread = await client.threads.create({
       metadata: { user_id: session.user.id },
     });
 
-    return thread;
+    return thread as Thread<ThreadState>;
   } catch (error) {
     console.error('Failed to create thread:', error);
     throw error;

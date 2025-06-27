@@ -1,7 +1,10 @@
+import { Message } from "@langchain/langgraph-sdk";
+
 export type EmailInterruptValue = {
   question: string;
   recipient_email: string;
-  message_body: string;
+  message_body?: string;
+  body?: string;
 };
 
 export type EmailInterruptResponse= {
@@ -9,3 +12,10 @@ export type EmailInterruptResponse= {
   edits?: string;
   feedback?: string;
 };
+
+// Define your thread state type  
+export type ThreadState = {  
+  messages: Message[];  
+  thread_title: string;  
+  // Add other state properties as needed  
+};  

@@ -10,14 +10,15 @@ import {
   getThreadsAction,
 } from '@/lib/actions';
 import { useQueryState } from 'nuqs';
+import { ThreadState } from '@/lib/types';
 
 type ThreadProviderProps = {
-  threads: Thread[];
+  threads: Thread<ThreadState>[];
   children: React.ReactNode;
 };
 
 type Threads = {
-  threads: Thread[];
+  threads: Thread<ThreadState>[];
   isThreadsLoading: boolean;
   createThread: () => void;
   isCreatingThread: boolean;
