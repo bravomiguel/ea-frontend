@@ -147,7 +147,7 @@ function ReviewEmailCard() {
               id="feedback"
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
-              placeholder="Why are you rejecting this message?"
+              placeholder="E.g. Email sounds too formal, please make it more casual."
               rows={3}
               className="resize-none"
               autoFocus

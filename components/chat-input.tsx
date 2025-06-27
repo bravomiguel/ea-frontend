@@ -144,7 +144,7 @@ export function ChatInput() {
   };
 
   return (
-    <form ref={formRef} onSubmit={onSubmit} className="flex w-full p-4 pb-8">
+    <form ref={formRef} onSubmit={onSubmit} className="flex w-full pt-4 pb-8">
       <div className="max-w-3xl mx-auto w-full relative bg-gray-100 rounded-lg ring-offset-background transition-all focus-within:ring-2 focus-within:ring-gray-600">
         {/* Container for textarea and button */}
         <div className="relative p-3">

@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
+import { v4 as uuidv4 } from 'uuid';
+import { Message } from '@langchain/langgraph-sdk';
 import { ArrowDown } from 'lucide-react';
 import { ChatMessage } from '@/components/chat-message';
 import { ChatInput } from '@/components/chat-input';
@@ -12,12 +15,14 @@ import { useInputHeight } from '@/providers/input-height-provider';
 import { AIUpdate } from './ai-update';
 import { useComposioContext } from '@/providers/composio-provider';
 import { ConnectGmailCard } from '@/components/connect-gmail-card';
+import { StarterPrompts } from '@/components/starter-prompts';
 
 export function ChatContainer() {
   const { inputHeight } = useInputHeight();
   const { hasGmailConnection, handleConnect, isConnecting } = useComposioContext();
 
-  const { messages, ...stream } = useStreamContext();
+  const { messages, submit, ...stream } = useStreamContext();
+  const { data: session } = useSession();
   const lastMessage = messages[messages.length - 1];
 
   const lastError = useRef<string | undefined>(undefined);
@@ -46,6 +51,35 @@ export function ChatContainer() {
 
     setShowScrollButton(isScrolledUp);
     setShouldAutoScroll(isAtBottom);
+  };
+  
+  // Handle prompt click from starter prompts
+  const handlePromptClick = (prompt: string) => {
+    if (!session?.user?.id) return;
+    
+    const newHumanMessage: Message = {
+      id: uuidv4(),
+      type: 'human',
+      content: prompt,
+    };
+    
+    submit(
+      {
+        messages: [newHumanMessage],
+      },
+      {
+        config: {
+          configurable: {
+            user_id: session.user.id,
+          },
+        },
+        streamMode: ['values'],
+        optimisticValues: (prev) => ({
+          ...prev,
+          messages: [...(prev.messages ?? []), newHumanMessage],
+        }),
+      }
+    );
   };
 
   // Scroll to bottom on initial render
@@ -117,7 +151,7 @@ export function ChatContainer() {
   //   (m) => m.type === 'ai' || m.type === 'tool',
   // );
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="flex flex-col h-full relative px-4">
       <div
         className="flex-1 p-4 overflow-auto"
         onScroll={handleScroll}
@@ -133,12 +167,14 @@ export function ChatContainer() {
           ) : (
             <div className="space-y-4 max-w-3xl mx-auto w-full">
               {messages.length === 0 ? (
-                <div className="text-center">
-                  <h2 className="text-2xl font-semibold">Hello there!</h2>
-                  <p className="text-xl text-muted-foreground">
-                    How can I help you today?
-                  </p>
-                </div>
+                <>
+                  <div className="text-center">
+                    <h2 className="text-2xl font-semibold">Hello there!</h2>
+                    <p className="text-xl text-muted-foreground">
+                      How can I help you today?
+                    </p>
+                  </div>
+                </>
               ) : (
                 <>
                   {messages
@@ -181,6 +217,13 @@ export function ChatContainer() {
           >
             <ArrowDown className="h-5 w-5 text-white" />
           </Button>
+        </div>
+      )}
+
+      {/* Show starter prompts when there are no messages and viewport is wide enough */}
+      {hasGmailConnection && messages.length === 0 && (
+        <div className="max-w-3xl mx-auto w-full pb-2 hidden lg:block">
+          <StarterPrompts onPromptClick={handlePromptClick} />
         </div>
       )}
 
