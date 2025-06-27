@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
+import { useComposioContext } from '@/providers/composio-provider';
 
 export function ChatSidebar() {
   const {
@@ -23,6 +24,8 @@ export function ChatSidebar() {
     setActiveThreadId,
   } = useThreads();
 
+  const { hasGmailConnection, isConnecting } = useComposioContext();
+
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   return (
@@ -33,7 +36,7 @@ export function ChatSidebar() {
           variant="ghost"
           size="icon"
           onClick={createThread}
-          disabled={isCreatingThread}
+          disabled={isCreatingThread || !hasGmailConnection || isConnecting}
         >
           <PlusIcon className="h-5 w-5" />
         </Button>
