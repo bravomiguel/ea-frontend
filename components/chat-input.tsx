@@ -22,6 +22,8 @@ export function ChatInput() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
+  // console.log({ session });
+
   const {
     register,
     handleSubmit,
@@ -106,6 +108,12 @@ export function ChatInput() {
         ],
       },
       {
+        config: {
+          configurable: {
+            user_id: session.user.id,
+            // model: 'openai/gpt-4o-mini',
+          },
+        },
         streamMode: ['values'],
         optimisticValues: (prev) => ({
           ...prev,
@@ -115,7 +123,6 @@ export function ChatInput() {
             newHumanMessage,
           ],
         }),
-        config: { configurable: { user_id: session.user.id } },
       },
     );
 

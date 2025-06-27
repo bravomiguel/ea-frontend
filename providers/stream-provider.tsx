@@ -27,6 +27,7 @@ const useTypedStream = useStream<
     CustomEventType: UIMessage | RemoveUIMessage;
     ConfigurableType: {
       user_id: string;
+      model?: string;
     };
   }
 >;
