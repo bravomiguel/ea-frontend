@@ -45,7 +45,7 @@ export default async function RootLayout({
       >
         <SessionProvider>
           <NuqsAdapter>
-            <Toaster />
+            <Toaster position="top-center" />
             <QueryProvider>
               <ThreadProvider threads={threads}>
                 <InputHeightProvider>
