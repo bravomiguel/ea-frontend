@@ -2,7 +2,7 @@
 
 import { useStreamContext } from '@/providers/stream-provider';
 import { Loader2 } from 'lucide-react';
-import { hasToolCalls } from '@/lib/utils';
+import { cn, hasToolCalls } from '@/lib/utils';
 import { EmailInterruptValue } from '@/lib/types';
 import { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
@@ -95,17 +95,16 @@ function ReviewEmailCard() {
     );
   };
 
-  const handleConfirmReject = () => {
+  const handleReject = ({ hasFeedback } = { hasFeedback: false }) => {
     submit(
       {},
       {
         command: {
           resume: {
             action: 'reject',
-            feedback:
-              feedback.length > 0
-                ? feedback
-                : 'Email rejected, no feedback provided.',
+            feedback: hasFeedback
+              ? feedback
+              : 'User decided not to send email, no feedback provided.',
           },
         },
       },
@@ -142,9 +141,9 @@ function ReviewEmailCard() {
 
         {showFeedback && (
           <div className="space-y-2 pt-2">
-            <Label htmlFor="feedback">Feedback (optional)</Label>
+            <Label htmlFor="edits">Edits</Label>
             <Textarea
-              id="feedback"
+              id="edits"
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
               placeholder="E.g. Email sounds too formal, please make it more casual."
@@ -160,9 +159,14 @@ function ReviewEmailCard() {
                   setFeedback('');
                 }}
               >
-                Cancel
+                Back
               </Button>
-              <Button onClick={handleConfirmReject}>Confirm Reject</Button>
+              <Button
+                onClick={() => handleReject({ hasFeedback: true })}
+                disabled={feedback.trim() === ''}
+              >
+                Submit Edits
+              </Button>
             </div>
           </div>
         )}
@@ -170,8 +174,21 @@ function ReviewEmailCard() {
 
       {!showFeedback && (
         <CardFooter className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setShowFeedback(true)}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              handleReject();
+            }}
+          >
             Reject
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setShowFeedback(true);
+            }}
+          >
+            Suggest Edits
           </Button>
           <Button onClick={handleSend}>Send</Button>
         </CardFooter>

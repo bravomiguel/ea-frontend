@@ -12,7 +12,7 @@ export function StarterPrompts({ onPromptClick }: StarterPromptsProps) {
     "Get my latest unread emails",
     "Tell my boss I'm sick and won't be at work",
     "Ask me about my email writing style",
-    "What do you know about me?"
+    "What have you learned about me?"
   ];
 
   return (
