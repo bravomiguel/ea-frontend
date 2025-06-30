@@ -37,6 +37,7 @@ export function ChatSidebar() {
           size="icon"
           onClick={createThread}
           disabled={isCreatingThread || !hasGmailConnection || isConnecting}
+          className="cursor-pointer"
         >
           <PlusIcon className="h-5 w-5" />
         </Button>
@@ -61,15 +62,18 @@ export function ChatSidebar() {
                 <Button
                   variant="ghost"
                   className={cn(
-                    'w-full justify-start text-sm font-normal text-left px-2',
+                    'w-full justify-start text-sm font-normal text-left px-2 cursor-pointer',
                   )}
                   onClick={() => {
                     setActiveThreadId(thread.thread_id);
                   }}
                 >
-                  {/* {thread.thread_id.substring(0, 23)}... */}
-                  {thread.values.thread_title ??
-                    `${thread.thread_id.substring(0, 23)}...`}
+                  <div className="w-[90%] overflow-hidden text-ellipsis whitespace-nowrap">
+                    {/* Remove double quotes and display title or thread ID */}
+                    {thread.values.thread_title
+                      ? thread.values.thread_title.replace(/"/g, '')
+                      : `${thread.thread_id.substring(0, 23)}...`}
+                  </div>
                 </Button>
                 <div
                   className={cn(
@@ -88,7 +92,11 @@ export function ChatSidebar() {
                     }}
                   >
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 cursor-pointer"
+                      >
                         <MoreHorizontalIcon className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
