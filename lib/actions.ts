@@ -8,12 +8,11 @@ import { auth } from '@/auth';
 import { ThreadState } from './types';
 
 const apiUrl = process.env.LANGGRAPH_API_URL;
-const apiKey = process.env.LANGGRAPH_API_KEY;
+// const apiKey = process.env.LANGGRAPH_API_KEY;
 const client = new Client({
   apiUrl,
-  apiKey,
   defaultHeaders: {
-    'x-api-key': apiKey,
+    Authorization: `Bearer ${`123`}`,
   },
 });
 
@@ -60,17 +59,6 @@ export async function createThreadAction(): Promise<Thread<ThreadState>> {
   }
 }
 
-export async function checkGraphStatus(apiUrl: string): Promise<boolean> {
-  try {
-    const res = await fetch(`${apiUrl}/info`);
-    return res.ok;
-  } catch (e) {
-    console.error(e);
-    // return false;
-    throw e;
-  }
-}
-
 export async function deleteThreadAction(threadId: string) {
   try {
     if (!apiUrl) return;
@@ -113,10 +101,12 @@ export async function initiateConnectionAction(appName: string) {
     // Initiate connection - this calls Entity.initiateConnection internally
     const connectionRequest = await entity.initiateConnection({
       appName: appName,
+      // integrationId: process.env.GMAIL_INTEGRATION_ID,
       redirectUri:
         process.env.VERCEL_ENV === 'production'
           ? `https://ai-emailassistant.vercel.app`
           : `http://localhost:3000`,
+      // redirectUri: 'http://localhost:3000',
     });
 
     // Return connection details for OAuth flow
