@@ -106,7 +106,10 @@ export async function initiateConnectionAction(appName: string) {
     // Initiate connection - this calls Entity.initiateConnection internally
     const connectionRequest = await entity.initiateConnection({
       appName: appName,
-      redirectUri: `http://localhost:3000`,
+      redirectUri:
+        process.env.VERCEL_ENV === 'production'
+          ? `https://composio.ai`
+          : `http://localhost:3000`,
     });
 
     // Return connection details for OAuth flow
