@@ -108,7 +108,7 @@ export async function initiateConnectionAction(appName: string) {
       appName: appName,
       redirectUri:
         process.env.VERCEL_ENV === 'production'
-          ? `https://composio.ai`
+          ? `https://ai-emailassistant.vercel.app`
           : `http://localhost:3000`,
     });
 
