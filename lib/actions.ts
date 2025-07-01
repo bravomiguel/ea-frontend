@@ -8,7 +8,14 @@ import { auth } from '@/auth';
 import { ThreadState } from './types';
 
 const apiUrl = process.env.LANGGRAPH_API_URL;
-const client = new Client({ apiUrl });
+const apiKey = process.env.LANGGRAPH_API_KEY;
+const client = new Client({
+  apiUrl,
+  apiKey,
+  defaultHeaders: {
+    'x-api-key': apiKey,
+  },
+});
 
 // Initialize the toolset with your API key
 const toolset = new LangGraphToolSet({
