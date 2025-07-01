@@ -34,13 +34,22 @@ export const authConfig: NextAuthConfig = {
     },
     jwt({ token, user, account, profile }) {
       if (user) {
-        // If we have a Google provider, use the sub claim as the stable identifier
-        if (account?.provider === 'google' && profile?.sub) {
-          // Use the sub claim directly as it's designed to be a stable, unique identifier
-          // This ensures the same user always gets the same ID across sessions
-          token.id = profile.sub;
+        // If we have a Google provider, use the email without @gmail.com as the stable identifier
+        if (account?.provider === 'google' && user.email) {
+          // Strip the @gmail.com part from the email address
+          const emailWithoutDomain = user.email.replace(/@gmail\.com$/i, '');
+          
+          // Sanitize the email username: convert to lowercase and replace special characters
+          const sanitizedId = emailWithoutDomain
+            .toLowerCase()
+            .replace(/[^a-z0-9_-]/g, '_')  // Replace non-alphanumeric chars except underscore and hyphen
+            .replace(/_+/g, '_')           // Replace multiple underscores with a single one
+            .replace(/^_+|_+$/g, '');     // Remove leading and trailing underscores
+          
+          // Use the sanitized email username as the stable identifier
+          token.id = sanitizedId;
         } else {
-          // For other providers or if sub is not available, use the existing ID
+          // For other providers or if email is not available, use the existing ID
           token.id = user.id;
         }
       }
